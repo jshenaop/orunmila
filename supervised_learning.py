@@ -113,9 +113,14 @@ predict_ds.FlushCache()
 levels = compute_overview_levels(predict_ds.GetRasterBand(1))
 predict_ds.BuildOverviews('NEAREST', levels)
 
+#print len(predict_ds[:])
+
 # Apply the color table from the SWReGAP landcover raster.
 gap_ds = gdal.Open(gap_fn)
 colors = gap_ds.GetRasterBand(1).GetRasterColorTable()
+nana = predict_ds.ReadAsArray()
+print nana[3500][3500]
 predict_ds.GetRasterBand(1).SetRasterColorTable(colors)
+
 
 del ds
