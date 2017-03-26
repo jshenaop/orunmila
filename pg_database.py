@@ -1,14 +1,16 @@
 # coding=utf-8
 
 from datetime import datetime
+import sqlalchemy
 from sqlalchemy import DateTime
-from sqlalchemy import Table, Column, Integer, Numeric, String
+from sqlalchemy import ForeignKey
+from sqlalchemy import Table, Column, Integer, Numeric, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 
-engine = sqlalchemy.create_engine('postgresql://orunmila:neuralnet@198.199.104.56/orunmila')
+engine = sqlalchemy.create_engine('postgresql://orunmila:neuralnet@198.199.104.56/orunmila', pool_recycle=1800)
 Session = sessionmaker(bind=engine)
 session = Session()
 
@@ -24,39 +26,38 @@ class Users(Base):
     email = Column(String(255))
 
 
-class Clients():
+class Clients(Base):
 
     __tablename__ = 'clients'
 
-    client_id = Column(Integer(), primary_key=True)
+    client_id = Column(Integer(), primary_key=True, autoincrement=True)
     name = Column(String(255))
     surname = Column(String(255))
     email = Column(String(255))
-    cellphone = Column(Integer())
+    cellphone = Column(String(15))
     created_on = Column(DateTime(), default=datetime.now)
     updated_on = Column(DateTime(), default=datetime.now, onupdate=datetime.now)
 
 
-class Projects():
+class Projects(Base):
 
     __tablename__ = 'projects'
 
-    project_id = Column(Integer(), primary_key=True)
-    project_code = Column(String(100))
+    project_id = Column(Integer(), primary_key=True, autoincrement=True)
     client_id = Column(Integer, ForeignKey('clients.client_id'))
+    project_code = Column(String(100))
     latitude = Column(String(55))
     longitude = Column(String(55))
     tile = Column(String(55))
-    crop = Column(String(100))
     analysis = Column(String(55))
     created_on = Column(DateTime(), default=datetime.now)
     updated_on = Column(DateTime(), default=datetime.now, onupdate=datetime.now)
 
 
-class Zora():
+class Zora(Base):
 
     __tablename__ = 'zora'
-    analysis_id = Column(String(200))
+    analysis_id = Column(String(200), primary_key=True)
     analysis_point = Column(String(200))
 
 
@@ -85,7 +86,29 @@ def modify_user():
 
 def search_user_password(user):
     try:
-        password = session.query(Users).filter(Users.password == user).first()
-        return password
+        info = session.query(Users).filter(Users.username == user).first()
+        return info.password
     except:
         return None
+
+
+def add_client(name, surname, email, cellphone):
+    cc_client = Clients(name=name, surname=surname, email=email, cellphone=cellphone)
+    session.add(cc_client)
+    session.commit()
+
+
+def search_client(email):
+    try:
+        info = session.query(Clients).filter(Clients.email == email).first()
+        return info
+    except:
+        return None
+
+
+def add_project(email, project_code, latitude, longitude, tile, analysis):
+    info = search_client(email)
+    cc_project = Projects(client_id=info.client_id, project_code=project_code, latitude=latitude, longitude=longitude,
+                          tile=tile, analysis=analysis)
+    session.add(cc_project)
+    session.commit()
