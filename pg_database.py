@@ -45,7 +45,7 @@ class Projects(Base):
 
     project_id = Column(Integer(), primary_key=True, autoincrement=True)
     client_id = Column(Integer, ForeignKey('clients.client_id'))
-    project_code = Column(String(100))
+    project_type = Column(String(100))
     latitude = Column(String(55))
     longitude = Column(String(55))
     tile = Column(String(55))
@@ -106,9 +106,9 @@ def search_client(email):
         return None
 
 
-def add_project(email, project_code, latitude, longitude, tile, analysis):
+def add_project(email, project_type, latitude, longitude, tile, analysis):
     info = search_client(email)
-    cc_project = Projects(client_id=info.client_id, project_code=project_code, latitude=latitude, longitude=longitude,
+    cc_project = Projects(client_id=info.client_id, project_type=project_type, latitude=latitude, longitude=longitude,
                           tile=tile, analysis=analysis)
     session.add(cc_project)
     session.commit()

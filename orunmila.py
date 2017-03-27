@@ -6,7 +6,7 @@ from collections import OrderedDict
 
 import termcolor
 import pg_database as db
-#import scene_informer as si
+import orunmila_informer as oi
 #import scene_downloader as sd
 #import scene_processer as sp
 
@@ -57,7 +57,21 @@ def menu_loop():
             menu[choice]()
 
 
-# Register
+def menu_loop_admin():
+    """Show Admin Menu"""
+    choice = None
+
+    while choice != 'q':
+        print("Enter 'q' to quit.")
+        for key, value in menu_admin.items():
+            print('{}) {}'.format(key, value.__doc__))
+        choice = raw_input('Action: ').lower().strip()
+
+        if choice in menu_admin:
+            menu_admin[choice]()
+
+
+# Menu Admin
 def client_register():
     """Client Register."""
     name = raw_input('Add client name: ')
@@ -74,20 +88,43 @@ def client_search():
     info = db.search_client(email=email)
     return info.name, info.surname, info.email, info.cellphone
 
+
 def project_register():
+    """Project Register."""
     email = raw_input('Client email: ')
-    project_code = raw_input('Add project code: ')
+    project_type = raw_input('Add project type: ')
     latitude = raw_input('Add latitude: ')
     longitude = raw_input('Add longitude: ')
     analysis = raw_input('Add analysis: ')
 
-    db.add_project(email=email, project_code=project_code, latitude=latitude, longitude=longitude, analysis=analysis)
+    tile = oi.get_wrs2(latitude, longitude)
 
+    try:
+        tile = oi.get_wrs2(latitude, longitude)
+        db.add_project(email=email, project_type=project_type, latitude=latitude, longitude=longitude, tile=tile,
+                       analysis=analysis)
 
+    except:
+        print "Can not save project"
 
-# Registro Proyecto
-        # Ingresar Proyecto.
-        # Consultar Proyecto (Satelite).
+def project_search():
+    """Project Search."""
+    email = raw_input('Client email: ')
+    project_type = raw_input('Add project type: ')
+    latitude = raw_input('Add latitude: ')
+    longitude = raw_input('Add longitude: ')
+    analysis = raw_input('Add analysis: ')
+
+    tile = oi.get_wrs2(latitude, longitude)
+
+    try:
+        tile = oi.get_wrs2(latitude, longitude)
+        db.add_project(email=email, project_type=project_type, latitude=latitude, longitude=longitude, tile=tile,
+                        analysis=analysis)
+
+    except:
+            print "Can not save project"
+
 
 # Operación
     # Identificar Tile.
@@ -98,13 +135,20 @@ def project_register():
     # Estadistica.
     # Diagnostico
 
+
 # Entrega información
 
 # Program menu
 
 menu = OrderedDict([
+    ('a', menu_loop_admin),
+])
+
+menu_admin = OrderedDict([
     ('r', client_register),
     ('s', client_search),
+    ('p', project_register),
+    ('f', project_search),
 ])
 
 if __name__ == '__main__':

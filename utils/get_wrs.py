@@ -115,3 +115,6 @@ class ConvertToWRS:
 
 #pairs = [(10.3052, 47.1449),(14.6558, 46.8752),(11.9531, 44.8081), (7.7783, 44.9181)];
 #conv.getWrsByPolygon(pairs);
+
+#objeto = ConvertToWRS()
+#print (objeto.get_wrs('4.6697', '-74.0817'))
