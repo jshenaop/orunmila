@@ -2,6 +2,14 @@
 
 import datetime
 from utils import get_wrs as wrs
+from usgs import api
+
+username = 'jshenaop'
+password = 'Neuralnet1985'
+
+api.login(username, password)
+
+today = datetime.datetime.now()
 
 def get_today():
     # Get today date to work with
@@ -18,8 +26,6 @@ def get_today():
 
 
 def get_wrs2(latitude, longitude):
-    #latitude = input('Ingrese LATITUD: ')
-    #longitude = input('Ingrese LONGITUD: ')
 
     conv = wrs.ConvertToWRS()
     wrs_path_row = conv.get_wrs(float(latitude), float(longitude))
@@ -38,3 +44,27 @@ def get_wrs2(latitude, longitude):
         row = '0{}'.format(row)
 
     return (path+row)
+
+
+def search_scenes(dataset, latitud, longitud):
+    # Set the Hyperion and Landsat 8 dataset
+    #hyperion_dataset = 'EO1_HYP_PUB'
+    #landsat8_dataset = 'LANDSAT_8'
+    # Set the EarthExplorer catalog
+    node = 'EE'
+    # Set the scene ids
+    scenes = api.search(dataset, node, lat=latitud, lng=longitud, distance=100, ll=None, ur=None, start_date='2016-01-01', end_date=today.strftime('%Y-%m-%d'), where=None, max_results=50000, starting_number=1, sort_order="DESC", extended=False, api_key=None)
+    scenes_list = []
+    for scene in scenes:
+        scenes_list.append(scene)
+    return scenes_list
+
+
+def search_metadata(scene_id):
+    # Set the Hyperion and Landsat 8 dataset
+    hyperion_dataset = 'EO1_HYP_PUB'
+    landsat8_dataset = 'LANDSAT_8'
+    # Set the EarthExplorer catalog
+    node = 'EE'
+    # Submit requests to USGS servers
+    return api.metadata(landsat8_dataset, node, [scene_id])

@@ -96,40 +96,63 @@ def project_register():
     latitude = raw_input('Add latitude: ')
     longitude = raw_input('Add longitude: ')
     analysis = raw_input('Add analysis: ')
+    description = raw_input('Add description: ')
 
     tile = oi.get_wrs2(latitude, longitude)
 
     try:
         tile = oi.get_wrs2(latitude, longitude)
         db.add_project(email=email, project_type=project_type, latitude=latitude, longitude=longitude, tile=tile,
-                       analysis=analysis)
+                       analysis=analysis, description=description)
 
     except:
         print "Can not save project"
 
+
 def project_search():
     """Project Search."""
+    pass
+
+
+# Menu Project
+def run_project():
+    """Run Project."""
     email = raw_input('Client email: ')
-    project_type = raw_input('Add project type: ')
-    latitude = raw_input('Add latitude: ')
-    longitude = raw_input('Add longitude: ')
-    analysis = raw_input('Add analysis: ')
+    info_projects = db.search_projects(email)
+    for project in info_projects:
+        print 'PROJECT ID: ', project.project_id, 'DESCRIPTION: ', project.description, \
+            ' PROJECT TYPE: ', project.project_type, 'STATUS: ', project.status
 
-    tile = oi.get_wrs2(latitude, longitude)
+    id_project_chose = int(raw_input('Project to run: '))
 
-    try:
-        tile = oi.get_wrs2(latitude, longitude)
-        db.add_project(email=email, project_type=project_type, latitude=latitude, longitude=longitude, tile=tile,
-                        analysis=analysis)
+    for project in info_projects:
+        if project.project_id == id_project_chose:
+            project_type = project.project_type
+            from_date = project.from_date
+            tile = project.tile
+            latitude = project.latitude
+            longitude = project.longitude
 
-    except:
-            print "Can not save project"
+    def get_images(project_type, from_date, tile, latitude, longitude):
+        info = db.search_analysis_type(project_type)
+        scenes = oi.search_scenes(info.satellite, latitude, longitude)
+
+        for scene in scenes:
+            print (scene['displayId'])
+
+        print (oi.search_metadata('LC81161872017078LGN00'))
+
+    get_images(project_type=project_type, from_date=from_date, tile=tile, latitude=latitude, longitude=longitude)
+
+    # Buscar imagenes disponibles y no descargadas correspondientes al satelite en un rango de tiempo.
+        # Identificar Tile, Tipo de Proyecto, Rango de Fechas.
+        # Identificar Imagenes descargadas.
+        # Identificar Imagenes disponibles.
+        # Comparar entre imagenes disponibles y descargadas y descargar solo las de poca nubosidad.
+            # Descargar Imagenes, Descomprimir y Eliminar.
 
 
-# Operación
-    # Identificar Tile.
-    # Buscar imagenes correspondientes al satelite en un rango de tiempo.
-    # Descargar imagenes, descomprimir y eliminar.
+
     # Pegarlas, Cortarlas y Clasificarlas.
         # Clasificar escoger tipo de analisis.
     # Estadistica.
@@ -142,6 +165,7 @@ def project_search():
 
 menu = OrderedDict([
     ('a', menu_loop_admin),
+    ('r', run_project),
 ])
 
 menu_admin = OrderedDict([

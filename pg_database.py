@@ -45,14 +45,26 @@ class Projects(Base):
 
     project_id = Column(Integer(), primary_key=True, autoincrement=True)
     client_id = Column(Integer, ForeignKey('clients.client_id'))
-    project_type = Column(String(100))
+    project_type = Column(String(100), ForeignKey('analysis_type.analysis_type'))
     latitude = Column(String(55))
     longitude = Column(String(55))
     tile = Column(String(55))
     analysis = Column(String(55))
+    description = Column(String(200))
+    from_date = Column(DateTime(), default=datetime.now)
     created_on = Column(DateTime(), default=datetime.now)
     updated_on = Column(DateTime(), default=datetime.now, onupdate=datetime.now)
+    status = Column(String(10), default='ACTIVE')
 
+
+class Analysis_Type(Base):
+
+    __tablename__ = 'analysis_type'
+
+    analysis_id = Column(Integer(), primary_key=True, autoincrement=True)
+    analysis_type = Column(String(100))
+    satellite = Column(String(100))
+    bands = Column(String(100))
 
 class Zora(Base):
 
@@ -106,9 +118,26 @@ def search_client(email):
         return None
 
 
-def add_project(email, project_type, latitude, longitude, tile, analysis):
+def add_project(email, project_type, latitude, longitude, tile, analysis, description):
     info = search_client(email)
     cc_project = Projects(client_id=info.client_id, project_type=project_type, latitude=latitude, longitude=longitude,
-                          tile=tile, analysis=analysis)
+                          tile=tile, analysis=analysis, description=description)
     session.add(cc_project)
     session.commit()
+
+
+def search_projects(email):
+    info = search_client(email)
+    try:
+        info = session.query(Projects).filter(Projects.client_id == info.client_id).all()
+        return info
+    except:
+        return None
+
+
+def search_analysis_type(project_type):
+    try:
+        info = session.query(Analysis_Type).filter(Analysis_Type.analysis_type == project_type).first()
+        return info
+    except:
+        return None
