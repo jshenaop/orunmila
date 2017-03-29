@@ -53,7 +53,7 @@ def search_scenes(dataset, latitud, longitud):
     # Set the EarthExplorer catalog
     node = 'EE'
     # Set the scene ids
-    scenes = api.search(dataset, node, lat=latitud, lng=longitud, distance=100, ll=None, ur=None, start_date='2016-01-01', end_date=today.strftime('%Y-%m-%d'), where=None, max_results=50000, starting_number=1, sort_order="DESC", extended=False, api_key=None)
+    scenes = api.search(dataset, node, lat=latitud, lng=longitud, distance=100, ll=None, ur=None, start_date='2017-02-15', end_date=today.strftime('%Y-%m-%d'), where=None, max_results=50000, starting_number=1, sort_order="DESC", extended=False, api_key=None)
     scenes_list = []
     for scene in scenes:
         scenes_list.append(scene)

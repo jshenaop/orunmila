@@ -1,5 +1,3 @@
-# coding=utf8
-
 import os
 import sys
 import re
@@ -110,13 +108,17 @@ def download(scene_repository, scene):
     download_chunks(url, rep, nom_fic)
 
 
-def prepare_dir(scene_repository, path, row):
+def prepare_dir(scene_repository, scene):
+    path = scene[3:6]
+    row = scene[6:9]
     dir = path+row
     if not os.path.exists("{}/{}".format(scene_repository, dir)):
         os.makedirs("{}/{}".format(scene_repository, dir))
 
 
-def uncompress(scene_repository, path, row, scene):
+def uncompress(scene_repository, scene):
+    path = scene[3:6]
+    row = scene[6:9]
 
     if not os.path.exists(scene_repository + '/' + (path+row) + '/' + scene):
         os.makedirs(scene_repository + '/' + (path+row) + '/' + scene)
@@ -129,12 +131,12 @@ def uncompress(scene_repository, path, row, scene):
     tar.close()
 
 
-def delete(scene_repository, path, row, scene):
-    file = scene_repository + '/' + (path + row) + '/' + scene + '.tar.gz'
+def remove(scene_repository, scene):
+    path = scene[3:6]
+    row = scene[6:9]
+    file = scene_repository + '/' + (path+row) + '/' + scene + '.tar.gz'
     os.remove(file)
 
-
-    os.remove()
 
 def main():
     pass
