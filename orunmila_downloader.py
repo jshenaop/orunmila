@@ -1,3 +1,5 @@
+# coding=utf8
+
 import os
 import sys
 import re
@@ -131,7 +133,7 @@ def uncompress(scene_repository, scene):
     tar.close()
 
 
-def remove(scene_repository, scene):
+def remove_file(scene_repository, scene):
     path = scene[3:6]
     row = scene[6:9]
     file = scene_repository + '/' + (path+row) + '/' + scene + '.tar.gz'

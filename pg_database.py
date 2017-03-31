@@ -66,6 +66,7 @@ class Analysis_Type(Base):
     satellite = Column(String(100))
     bands = Column(String(100))
 
+
 class Zora(Base):
 
     __tablename__ = 'zora'
@@ -77,6 +78,7 @@ Base.metadata.create_all(engine)
 
 
 """ App user functions """
+
 
 def add_user(username, password, mail):
     cc_users = Users(username=username, password=password, mail=mail)

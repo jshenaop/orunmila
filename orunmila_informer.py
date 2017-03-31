@@ -4,6 +4,8 @@ import datetime
 from utils import get_wrs as wrs
 from usgs import api
 
+import pg_database as db
+
 username = 'jshenaop'
 password = 'Neuralnet1985'
 
@@ -68,3 +70,23 @@ def search_metadata(scene_id):
     node = 'EE'
     # Submit requests to USGS servers
     return api.metadata(landsat8_dataset, node, [scene_id])
+
+
+def project_searcher(email):
+    info_projects = db.search_projects(email)
+    for project in info_projects:
+        print 'PROJECT ID: ', project.project_id, 'DESCRIPTION: ', project.description, \
+            ' PROJECT TYPE: ', project.project_type, 'STATUS: ', project.status
+
+    id_project_chose = int(raw_input('Project to run: '))
+
+    for project in info_projects:
+        if project.project_id == id_project_chose:
+            project_type = project.project_type
+            from_date = project.from_date
+            tile = project.tile
+            latitude = project.latitude
+            longitude = project.longitude
+            project_id = str(project.project_id)
+
+    return project_type, from_date, tile, latitude, longitude, project_id

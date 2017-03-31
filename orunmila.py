@@ -8,9 +8,7 @@ import termcolor
 import pg_database as db
 import orunmila_informer as oi
 import orunmila_downloader as od
-
-# import scene_downloader as sd
-# import scene_processer as sp
+import orunmila_processer as op
 
 
 print (termcolor.colored("""
@@ -84,6 +82,20 @@ def menu_loop_project():
 
         if choice in menu_project:
             menu_project[choice]()
+
+
+def menu_loop_analysis():
+    """Show Analysis Menu"""
+    choice = None
+
+    while choice != 'q':
+        print("Enter 'q' to quit.")
+        for key, value in menu_analysis.items():
+            print('{}) {}'.format(key, value.__doc__))
+        choice = raw_input('Action: ').lower().strip()
+
+        if choice in menu_analysis:
+            menu_analysis[choice]()
 
 
 # Menu Admin
@@ -248,25 +260,44 @@ def download_scenes():
                 od.prepare_dir(path, scene_waiting)
                 od.download(path, scene_waiting)
                 od.uncompress(path, scene_waiting)
-                od.remove(path, scene_waiting)
+                od.remove_file(path, scene_waiting)
             except:
                 pass
     else:
         print ('Thanks for nothing')
 
-    # Buscar imagenes disponibles y no descargadas correspondientes al satelite en un rango de tiempo.
-    # Identificar Tile, Tipo de Proyecto, Rango de Fechas.
-    # Identificar Imagenes descargadas.
-    # Identificar Imagenes disponibles.
-    # Comparar entre imagenes disponibles y descargadas y descargar solo las de poca nubosidad.
-    # Descargar Imagenes, Descomprimir y Eliminar.
+
+# Menu Analysis
+def project_preparation():
+    """Project Preparation"""
+    email = raw_input('Client email: ')
+    project_type, from_date, tile, latitude, longitude, project_id = oi.project_searcher(email)
+    op.analytics_folder_creation(analytics_repository, project_type, project_id)
+    info = db.search_analysis_type(project_type)
+
+    def get_images(project_type, from_date, tile, latitude, longitude):
+        info = db.search_analysis_type(project_type)
+        scenes = oi.search_scenes(info.satellite, latitude, longitude)
+
+        scenes_available = []
+
+        for scene in scenes:
+            scenes_available.append(scene['displayId'])
+
+        return scenes_available
+
+    list_scenes_available = get_images(project_type=project_type, from_date=from_date, tile=tile, latitude=latitude,
+                                       longitude=longitude)
+
+    for scene in list_scenes_available:
+        op.stack_bands(imagery_repository, analytics_repository, info.satellite, tile, project_type, project_id, scene,
+                       info.bands)
 
 
-
-    # Pegarlas, Cortarlas y Clasificarlas.
-    # Clasificar escoger tipo de analisis.
-    # Estadistica.
-    # Diagnostico
+# Pegarlas, Cortarlas y Clasificarlas.
+# Clasificar escoger tipo de analisis.
+# Estadistica.
+# Diagnostico
 
 
 # Entrega información
@@ -276,6 +307,7 @@ def download_scenes():
 menu = OrderedDict([
     ('a', menu_loop_admin),
     ('r', menu_loop_project),
+    ('p', menu_loop_analysis),
 ])
 
 menu_admin = OrderedDict([
@@ -288,7 +320,11 @@ menu_admin = OrderedDict([
 menu_project = OrderedDict([
     ('s', search_scenes),
     ('d', download_scenes),
-    # ('s', show_last_analysis),
+])
+
+menu_analysis = OrderedDict([
+    ('s', project_preparation),
+    #('d', download_scenes),
 ])
 
 if __name__ == '__main__':
