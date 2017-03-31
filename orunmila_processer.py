@@ -53,7 +53,6 @@ def analytics_folder_creation(analytics_repository, project_type, project_id):
 
 
 def stack_bands(imagery_repository, analytics_repository, satellite, tile, project_type, project_id, scene, band_list):
-   ### lO QUE SEA
     print band_list.split()
 
     stack_list = []
