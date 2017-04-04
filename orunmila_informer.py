@@ -1,5 +1,6 @@
 # coding=utf8
 
+import os
 import datetime
 from utils import get_wrs as wrs
 from usgs import api
@@ -13,6 +14,7 @@ api.login(username, password)
 
 today = datetime.datetime.now()
 
+
 def get_today():
     # Get today date to work with
     today = datetime.datetime.now()
@@ -24,11 +26,10 @@ def get_today():
     elif len(str(day.tm_yday)) == 2:
         julian_day = '0{}'.format(day.tm_yday)
 
-    return (year+julian_day)
+    return (year + julian_day)
 
 
 def get_wrs2(latitude, longitude):
-
     conv = wrs.ConvertToWRS()
     wrs_path_row = conv.get_wrs(float(latitude), float(longitude))
 
@@ -45,17 +46,19 @@ def get_wrs2(latitude, longitude):
     elif len(row) == 2:
         row = '0{}'.format(row)
 
-    return (path+row)
+    return (path + row)
 
 
 def search_scenes(dataset, latitud, longitud):
     # Set the Hyperion and Landsat 8 dataset
-    #hyperion_dataset = 'EO1_HYP_PUB'
-    #landsat8_dataset = 'LANDSAT_8'
+    # hyperion_dataset = 'EO1_HYP_PUB'
+    # landsat8_dataset = 'LANDSAT_8'
     # Set the EarthExplorer catalog
     node = 'EE'
     # Set the scene ids
-    scenes = api.search(dataset, node, lat=latitud, lng=longitud, distance=100, ll=None, ur=None, start_date='2017-02-15', end_date=today.strftime('%Y-%m-%d'), where=None, max_results=50000, starting_number=1, sort_order="DESC", extended=False, api_key=None)
+    scenes = api.search(dataset, node, lat=latitud, lng=longitud, distance=100, ll=None, ur=None,
+                        start_date='2017-02-15', end_date=today.strftime('%Y-%m-%d'), where=None, max_results=50000,
+                        starting_number=1, sort_order="DESC", extended=False, api_key=None)
     scenes_list = []
     for scene in scenes:
         scenes_list.append(scene)
@@ -90,3 +93,27 @@ def project_searcher(email):
             project_id = str(project.project_id)
 
     return project_type, from_date, tile, latitude, longitude, project_id
+
+
+def get_scenes_downloaded(imagery_repository, satellite, tile):
+    path = r'{0}/{1}/{2}'.format(imagery_repository, satellite, tile)
+    downloaded_scenes = os.listdir(path)
+    return downloaded_scenes
+
+
+def get_scenes_available(project_type, from_date, tile, latitude, longitude):
+    info = db.search_analysis_type(project_type)
+    scenes = search_scenes(info.satellite, latitude, longitude)
+
+    scenes_available = []
+
+    for scene in scenes:
+        scenes_available.append(scene['displayId'])
+
+    return scenes_available
+
+
+def get_project_images(analytics_repository, project_type, id_format_project):
+    path = r'{0}/{1}{2}'.format(analytics_repository, project_type, id_format_project)
+    project_images = os.listdir(path)
+    return project_images

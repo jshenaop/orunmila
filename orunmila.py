@@ -160,29 +160,13 @@ def search_scenes():
             latitude = project.latitude
             longitude = project.longitude
 
-    def get_images(project_type, from_date, tile, latitude, longitude):
-        info = db.search_analysis_type(project_type)
-        scenes = oi.search_scenes(info.satellite, latitude, longitude)
-
-        scenes_available = []
-
-        for scene in scenes:
-            scenes_available.append(scene['displayId'])
-
-        return scenes_available
-
-    def get_scenes_downloaded(imagery_repository, satellite, tile):
-        path = r'{0}\{1}\{2}'.format(imagery_repository, satellite, tile)
-        downloaded_scenes = os.listdir(path)
-        return downloaded_scenes
-
     satellite = db.search_analysis_type(project_type=project_type).satellite
 
-    list_scenes_available = get_images(project_type=project_type, from_date=from_date, tile=tile, latitude=latitude,
-                                       longitude=longitude)
+    list_scenes_available = oi.get_scenes_available(project_type=project_type, from_date=from_date, tile=tile,
+                                                    latitude=latitude, longitude=longitude)
 
-    list_scenes_downloaded = get_scenes_downloaded(imagery_repository=imagery_repository, satellite=satellite,
-                                                   tile=tile)
+    list_scenes_downloaded = oi.get_scenes_downloaded(imagery_repository=imagery_repository, satellite=satellite,
+                                                      tile=tile)
 
     list_scenes_waiting = []
 
@@ -213,29 +197,13 @@ def download_scenes():
             latitude = project.latitude
             longitude = project.longitude
 
-    def get_images(project_type, from_date, tile, latitude, longitude):
-        info = db.search_analysis_type(project_type)
-        scenes = oi.search_scenes(info.satellite, latitude, longitude)
-
-        scenes_available = []
-
-        for scene in scenes:
-            scenes_available.append(scene['displayId'])
-
-        return scenes_available
-
-    def get_scenes_downloaded(imagery_repository, satellite, tile):
-        path = r'{0}/{1}/{2}'.format(imagery_repository, satellite, tile)
-        downloaded_scenes = os.listdir(path)
-        return downloaded_scenes
-
     satellite = db.search_analysis_type(project_type=project_type).satellite
 
-    list_scenes_available = get_images(project_type=project_type, from_date=from_date, tile=tile, latitude=latitude,
-                                       longitude=longitude)
+    list_scenes_available = oi.get_scenes_available(project_type=project_type, from_date=from_date, tile=tile, latitude=latitude,
+                                                    longitude=longitude)
 
-    list_scenes_downloaded = get_scenes_downloaded(imagery_repository=imagery_repository, satellite=satellite,
-                                                   tile=tile)
+    list_scenes_downloaded = oi.get_scenes_downloaded(imagery_repository=imagery_repository, satellite=satellite,
+                                                      tile=tile)
 
     list_scenes_waiting = []
 
@@ -275,29 +243,27 @@ def project_preparation():
     op.analytics_folder_creation(analytics_repository, project_type, project_id)
     info = db.search_analysis_type(project_type)
 
-    def get_images(project_type, from_date, tile, latitude, longitude):
-        info = db.search_analysis_type(project_type)
-        scenes = oi.search_scenes(info.satellite, latitude, longitude)
+    list_scenes_downloaded = oi.get_scenes_downloaded(imagery_repository=imagery_repository, satellite=info.satellite,
+                                                      tile=tile)
 
-        scenes_available = []
-
-        for scene in scenes:
-            scenes_available.append(scene['displayId'])
-
-        return scenes_available
-
-    list_scenes_available = get_images(project_type=project_type, from_date=from_date, tile=tile, latitude=latitude,
-                                       longitude=longitude)
-
-    for scene in list_scenes_available:
+    print list_scenes_downloaded
+    for scene in list_scenes_downloaded:
         op.stack_bands(imagery_repository, analytics_repository, info.satellite, tile, project_type, project_id, scene,
                        info.bands)
 
+    id_format_project = op.format_project(project_id)
 
-# Pegarlas, Cortarlas y Clasificarlas.
-# Clasificar escoger tipo de analisis.
+    images = oi.get_project_images(analytics_repository=analytics_repository, project_type=project_type, id_format_project=id_format_project)
+    print images
+
+    for image in images:
+        op.gdal_clip(analytics_repository=analytics_repository, project_type=project_type, id_format_project=id_format_project,
+                     image=image, latitude='4.5988', longitude='-74.0808', kilometers='100')
+
+
+# Clasificarlas.
 # Estadistica.
-# Diagnostico
+# Diagnostico.
 
 
 # Entrega información

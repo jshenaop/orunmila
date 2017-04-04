@@ -52,8 +52,9 @@ def analytics_folder_creation(analytics_repository, project_type, project_id):
         os.makedirs("{}/{}{}".format(analytics_repository, project_type, project_path))
 
 
-def stack_bands(imagery_repository, analytics_repository, satellite, tile, project_type, project_id, scene, band_list):
-    print band_list.split()
+def stack_bands(imagery_repository, analytics_repository, satellite, tile, project_type, project_id, scene, band_list_db):
+    band_list = str(band_list_db)
+    band_list = band_list.split()
 
     stack_list = []
 
@@ -63,10 +64,9 @@ def stack_bands(imagery_repository, analytics_repository, satellite, tile, proje
 
     project_path = format_project(project_id)
 
-    path_analytics = '{}/{}{}'.format(analytics_repository, project_type, project_path)
+    path_analytics = '{}/{}{}/{}.TIF'.format(analytics_repository, project_type, project_path, scene)
 
     # Open band 1.
-    print stack_list[0]
     input_raster = gdal.Open(stack_list[0])
     info_band = input_raster.GetRasterBand(1)
 
@@ -78,13 +78,13 @@ def stack_bands(imagery_repository, analytics_repository, satellite, tile, proje
     output_raster.SetProjection(input_raster.GetProjection())
     output_raster.SetGeoTransform(input_raster.GetGeoTransform())
 
-    for index, band in enumerate(band_list):
-
+    for index, band in enumerate(stack_list):
         # Copy data from band i into the output image.
         info_raster = gdal.Open(band)
-        in_data = info_raster.ReadAsArray()
-        output_band = output_raster.GetRasterBand(index)
-        output_band.WriteArray(in_data)
+        input_band = info_raster.GetRasterBand(1)
+        input_data = input_band.ReadAsArray()
+        output_band = output_raster.GetRasterBand(index + 1)
+        output_band.WriteArray(input_data)
 
 
     # Compute statistics on each output band.
@@ -99,21 +99,22 @@ def stack_bands(imagery_repository, analytics_repository, satellite, tile, proje
     del output_raster
 
 
-def gdal_clip(imagery_repository, analytics_repository, tile, latitude, longitude, kilometers):
+def gdal_clip(analytics_repository, image, project_type, id_format_project, latitude, longitude, kilometers):
     # gdal_translate -projwin 450000 500000 600000 400000 LC80080572015116LGN00_B1.TIF OUTPUT.TIF
 
-    x, y, zone_number, zone_letter = utm.from_latlon(latitude, longitude)
+    int(kilometers)
 
-    xmin = x - (kilometers * 1000)
-    ymax = y + (kilometers * 1000)
-    ymin = y - (kilometers * 1000)
-    xmax = x + (kilometers * 1000)
+    x, y, zone_number, zone_letter = utm.from_latlon(float(latitude), float(longitude))
+
+    xmin = x - (int(kilometers) * 1000)
+    ymax = y + (int(kilometers) * 1000)
+    ymin = y - (int(kilometers) * 1000)
+    xmax = x + (int(kilometers) * 1000)
+
+    path = r'{0}/{1}{2}'.format(analytics_repository, project_type, id_format_project)
 
     cmd_call = (
-        "gdal_translate -projwin {0} {1} {2} {3} {4}_B1.TIF OUTPUT.TIF").format(xmin, ymax, xmax, ymin, scene)
-
-    #    gdal_translate -projwin 699999 388888 488888 399999 LC00570082017056dgg.tif HOSYYYS.TIF
-
+        "gdal_translate -projwin {0} {1} {2} {3} {4}/{5} {6}/{7}_CLIPPED.TIF").format(xmin, ymax, xmax, ymin, path, image, path, image)
 
     return os.system(cmd_call)
 
